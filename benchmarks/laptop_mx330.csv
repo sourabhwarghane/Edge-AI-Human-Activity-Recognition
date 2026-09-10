@@ -1,0 +1,2 @@
+date,device,pose_model,classifier,frames,avg_fps,avg_pose_ms,avg_classifier_ms
+2026-09-10 18:10:50,NVIDIA GeForce MX330,YOLOv8n-pose,Random Forest,1499,28.52,20.92,14.58
