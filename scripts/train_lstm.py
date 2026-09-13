@@ -7,12 +7,15 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
+import time
 
 data_dir = Path("data/raw")
 model_dir = Path("models")
 model_dir.mkdir(exist_ok=True)
 
-activities = ["standing", "walking", "sitting", "falling"]
+sequence_length = 12
+
+activities = ["standing", "walking", "sitting", "lying"]
 
 torch.manual_seed(42)
 np.random.seed(42)
@@ -24,7 +27,7 @@ for label_id, activity in enumerate(activities):
     files = sorted((data_dir / activity).glob("*.csv"))
 
     for file in files:
-        df = pd.read_csv(file)
+        df = pd.read_csv(file).tail(sequence_length)
         sequence = []
 
         for i in range(17):
@@ -53,7 +56,8 @@ y_test = torch.tensor(y_test)
 train_data = TensorDataset(X_train, y_train)
 train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 print("Device:", device)
 
 
@@ -114,3 +118,18 @@ with open(model_dir / "activity_labels.json", "w") as file:
     json.dump(activities, file)
 
 print("\nModel saved to models/activity_lstm.pth")
+
+
+latencies = []
+
+model.eval()
+
+with torch.no_grad():
+    for sample in X_test:
+        sample = sample.unsqueeze(0).to(device)
+        start = time.perf_counter()
+        _ = model(sample)
+        latency = (time.perf_counter() - start) * 1000
+        latencies.append(latency)
+
+print(f"Average LSTM inference latency: {np.mean(latencies):.2f} ms")

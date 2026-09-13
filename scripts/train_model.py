@@ -10,11 +10,13 @@ data_dir = Path("data/raw")
 model_dir = Path("models")
 model_dir.mkdir(exist_ok=True)
 
-activities = ["standing", "walking", "sitting", "falling"]
+sequence_length = 12
+
+activities = ["standing", "walking", "sitting", "lying"]
 
 
 def extract_features(file):
-    df = pd.read_csv(file)
+    df = pd.read_csv(file).tail(sequence_length)
     features = []
 
     for i in range(17):

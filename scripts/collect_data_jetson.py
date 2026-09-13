@@ -15,7 +15,13 @@ choice = int(input("Select activity (1-4): "))
 label = activities[choice - 1]
 
 model = YOLO("models/yolov8n-pose.pt")
-cap = cv2.VideoCapture(0)
+
+pipeline = "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM),width=1640,height=1232,framerate=30/1,format=NV12 ! nvvidconv ! video/x-raw,width=640,height=480,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false"
+cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+
+if not cap.isOpened():
+    print("Camera failed to open.")
+    exit()
 
 save_dir = Path("data/raw") / label
 save_dir.mkdir(parents=True, exist_ok=True)
@@ -33,7 +39,7 @@ while True:
     if not ret:
         break
 
-    results = model(frame, verbose=False)
+    results = model(frame, device=0, verbose=False)
     output = results[0].plot()
 
     if results[0].keypoints is not None and len(results[0].keypoints.xy) > 0:
@@ -61,21 +67,16 @@ while True:
             sequence.append(pose)
             last_sample_time = time.time()
 
-    cv2.putText(output, f"Activity: {label}", (20, 40),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-    cv2.putText(output, f"Saved: {saved_count}", (20, 75),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+    cv2.putText(output, f"Activity: {label}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+    cv2.putText(output, f"Saved: {saved_count}", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
     if recording:
-        cv2.putText(output, f"Recording: {len(sequence)}/{target_frames}",
-                    (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+        cv2.putText(output, f"Recording: {len(sequence)}/{target_frames}", (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
     else:
-        cv2.putText(output, "Press R to record | Q to quit", (20, 110),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        cv2.putText(output, "Press R to record | Q to quit", (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
     if len(sequence) == target_frames:
-        filename = save_dir / \
-            f"{label}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = save_dir / f"{label}_jetson_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         header = ["frame"]
 
         for i in range(17):
@@ -93,7 +94,8 @@ while True:
         recording = False
         print(f"Saved: {filename}")
 
-    cv2.imshow("Activity Data Collection", output)
+    cv2.imshow("Jetson Activity Data Collection", output)
+
     key = cv2.waitKey(1) & 0xFF
 
     if key == ord("r") and not recording:

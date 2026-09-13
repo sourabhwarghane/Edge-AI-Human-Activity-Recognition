@@ -1,6 +1,7 @@
-ultralytics
-opencv-python
-numpy
-pandas
-scikit-learn
-joblib
+PyTorch==2.8.0
+CUDA==12.6
+TensorRT==10.3
+NumPy==1.24.4
+OpenCV==4.5.4
+ONNX==1.16.2
+Ultralytics==8.4.147

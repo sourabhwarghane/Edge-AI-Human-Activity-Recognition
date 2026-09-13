@@ -23,4 +23,8 @@ runs/
 yolov8n-pose.pt
 
 # TensorRT generated engines
-*.engine
+*.onnx
+*.engine*
+*.deb
+*.whl
+
