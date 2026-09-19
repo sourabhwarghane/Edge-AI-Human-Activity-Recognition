@@ -223,18 +223,17 @@ The 25W setting is the configured power mode, not the continuous power consumpti
 ```text
 Edge-AI-Human-Activity-Recognition/
 ├── data/
-│   ├── raw/
-│   │   ├── standing/
-│   │   ├── walking/
-│   │   ├── sitting/
-│   │   └── lying/
-│   └── processed/
+│   └── raw/
+│       ├── standing/
+│       ├── walking/
+│       ├── sitting/
+│       └── lying/
+│   
 ├── models/
 │   ├── yolov8n-pose.pt
 │   ├── activity_classifier.joblib
 │   ├── activity_lstm.pth
 │   └── activity_labels.json
-├── notebooks/
 ├── scripts/
 │   ├── collect_data.py
 │   ├── collect_data_jetson.py
